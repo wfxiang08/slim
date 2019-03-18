@@ -160,10 +160,11 @@ func TestMarshalUnMarshalHeader(t *testing.T) {
 }
 
 func TestMarshalUnMarshal(t *testing.T) {
-	index := []uint32{10, 20, 30, 40, 50, 60}
+	index := []int32{10, 20, 30, 40, 50, 60}
+	elts := []uint32{10, 20, 30, 40, 50, 60}
 
 	sArray := &array.Array32{Converter: array.U32Conv{}}
-	err := sArray.Init(index, index)
+	err := sArray.Init(index, elts)
 	if err != nil {
 		t.Fatalf("failed to init compacted array")
 	}
@@ -239,10 +240,11 @@ func TestUnMarshalFromIncompleteReader(t *testing.T) {
 	// with an io.Reader:Read(p []byte)
 	// returns n < len(p).
 
-	index := []uint32{10, 20, 30, 40, 50, 60}
+	index := []int32{10, 20, 30, 40, 50, 60}
+	elts := []uint32{10, 20, 30, 40, 50, 60}
 
 	sArray := &array.Array32{Converter: array.U32Conv{}}
-	err := sArray.Init(index, index)
+	err := sArray.Init(index, elts)
 	if err != nil {
 		t.Fatalf("failed to init compacted array")
 	}
@@ -275,17 +277,19 @@ func TestUnMarshalFromIncompleteReader(t *testing.T) {
 }
 
 func TestMarshalAtUnMarshalAt(t *testing.T) {
-	index1 := []uint32{10, 20, 30, 40, 50, 60}
-	index2 := []uint32{15, 25, 35, 45, 55, 65}
+	index1 := []int32{10, 20, 30, 40, 50, 60}
+	elts1 := []uint32{10, 20, 30, 40, 50, 60}
+	index2 := []int32{15, 25, 35, 45, 55, 65}
+	elts2 := []uint32{15, 25, 35, 45, 55, 65}
 
 	sArray1 := &array.Array32{Converter: array.U32Conv{}}
-	err := sArray1.Init(index1, index1)
+	err := sArray1.Init(index1, elts1)
 	if err != nil {
 		t.Fatalf("failed to init compacted array")
 	}
 
 	sArray2 := &array.Array32{Converter: array.U32Conv{}}
-	err = sArray2.Init(index2, index2)
+	err = sArray2.Init(index2, elts2)
 	if err != nil {
 		t.Fatalf("failed to init compacted array")
 	}
@@ -336,7 +340,7 @@ func TestMarshalAtUnMarshalAt(t *testing.T) {
 	checkCompactedArray(index2, rSArray2, sArray2, t)
 }
 
-func checkCompactedArray(index []uint32, rSArray, sArray *array.Array32, t *testing.T) {
+func checkCompactedArray(index []int32, rSArray, sArray *array.Array32, t *testing.T) {
 	if rSArray.Cnt != sArray.Cnt {
 		t.Fatalf("wrong Cnt: %d, %d", rSArray.Cnt, sArray.Cnt)
 	}
@@ -369,7 +373,7 @@ func checkCompactedArray(index []uint32, rSArray, sArray *array.Array32, t *test
 		sVal := sArray.Get(idx).(uint32)
 		rsVal := rSArray.Get(idx).(uint32)
 
-		if sVal != rsVal || sVal != idx {
+		if sVal != rsVal || sVal != uint32(idx) {
 			t.Fatalf("wrong Elts value: %v, %v, %v", sVal, rsVal, idx)
 		}
 	}
@@ -395,10 +399,11 @@ func (t *testWriterReader) ReadAt(b []byte, off int64) (n int, err error) {
 
 func TestWriteAtReadAt(t *testing.T) {
 	rw := &testWriterReader{}
-	index1 := []uint32{10, 20, 30, 40, 50, 60}
+	index1 := []int32{10, 20, 30, 40, 50, 60}
+	elts := []uint32{10, 20, 30, 40, 50, 60}
 
 	wArr := &array.Array32{Converter: array.U32Conv{}}
-	err := wArr.Init(index1, index1)
+	err := wArr.Init(index1, elts)
 	if err != nil {
 		t.Fatalf("failed to init compacted array")
 	}

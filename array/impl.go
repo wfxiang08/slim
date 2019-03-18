@@ -7,7 +7,7 @@ type ArrayU16 struct {
 }
 
 // NewArrayU16 creates a ArrayU16
-func NewArrayU16(index []uint32, elts []uint16) (a *ArrayU16, err error) {
+func NewArrayU16(index []int32, elts []uint16) (a *ArrayU16, err error) {
 
 	a = &ArrayU16{Data: elts}
 
@@ -21,7 +21,7 @@ func NewArrayU16(index []uint32, elts []uint16) (a *ArrayU16, err error) {
 
 // Get2 returns value indexed by `idx` and a bool indicate if the value is
 // found.
-func (a *ArrayU16) Get2(idx uint32) (uint16, bool) {
+func (a *ArrayU16) Get2(idx int32) (uint16, bool) {
 	i, ok := a.GetEltIndex(idx)
 	if ok {
 		return a.Data[i], true

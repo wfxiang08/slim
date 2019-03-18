@@ -184,14 +184,14 @@ func (st *SlimTrie) LoadTrie(root *Node) (err error) {
 		return
 	}
 
-	childIndex, childData := []uint32{}, []*children{}
-	stepIndex, stepData := []uint32{}, []*uint16{}
-	leafIndex, leafData := []uint32{}, []interface{}{}
+	childIndex, childData := []int32{}, []*children{}
+	stepIndex, stepData := []int32{}, []*uint16{}
+	leafIndex, leafData := []int32{}, []interface{}{}
 
 	tq := make([]*Node, 0, 256)
 	tq = append(tq, root)
 
-	for nID := uint32(0); ; {
+	for nID := int32(0); ; {
 		if len(tq) == 0 {
 			break
 		}
@@ -320,18 +320,18 @@ func (st *SlimTrie) searchWords(key []byte) (ltVal, eqVal, gtVal interface{}) {
 
 	if ltIdx != -1 {
 		if ltLeaf {
-			ltVal = st.Leaves.Get(uint32(ltIdx))
+			ltVal = st.Leaves.Get(ltIdx)
 		} else {
 			rmIdx := st.rightMost(uint16(ltIdx))
-			ltVal = st.Leaves.Get(uint32(rmIdx))
+			ltVal = st.Leaves.Get(int32(rmIdx))
 		}
 	}
 	if gtIdx != -1 {
 		fmIdx := st.leftMost(uint16(gtIdx))
-		gtVal = st.Leaves.Get(uint32(fmIdx))
+		gtVal = st.Leaves.Get(int32(fmIdx))
 	}
 	if eqIdx != -1 {
-		eqVal = st.Leaves.Get(uint32(eqIdx))
+		eqVal = st.Leaves.Get(eqIdx)
 	}
 
 	return
@@ -395,18 +395,18 @@ func (st *SlimTrie) Search(key string) (ltVal, eqVal, gtVal interface{}) {
 
 	if ltIdx != -1 {
 		if ltLeaf {
-			ltVal = st.Leaves.Get(uint32(ltIdx))
+			ltVal = st.Leaves.Get(ltIdx)
 		} else {
 			rmIdx := st.rightMost(uint16(ltIdx))
-			ltVal = st.Leaves.Get(uint32(rmIdx))
+			ltVal = st.Leaves.Get(int32(rmIdx))
 		}
 	}
 	if gtIdx != -1 {
 		fmIdx := st.leftMost(uint16(gtIdx))
-		gtVal = st.Leaves.Get(uint32(fmIdx))
+		gtVal = st.Leaves.Get(int32(fmIdx))
 	}
 	if eqIdx != -1 {
-		eqVal = st.Leaves.Get(uint32(eqIdx))
+		eqVal = st.Leaves.Get(eqIdx)
 	}
 
 	return
@@ -454,14 +454,14 @@ func (st *SlimTrie) Get(key string) (eqVal interface{}) {
 	}
 
 	if eqIdx != -1 {
-		eqVal = st.Leaves.Get(uint32(eqIdx))
+		eqVal = st.Leaves.Get(eqIdx)
 	}
 
 	return
 }
 
 func (st *SlimTrie) getChild(idx uint16) *children {
-	cval, found := st.Children.Get2(uint32(idx))
+	cval, found := st.Children.Get2(int32(idx))
 	if found {
 		return cval.(*children)
 	}
@@ -469,7 +469,7 @@ func (st *SlimTrie) getChild(idx uint16) *children {
 }
 
 func (st *SlimTrie) getStep(idx uint16) uint16 {
-	step := st.Steps.Get(uint32(idx))
+	step := st.Steps.Get(int32(idx))
 	if step == nil {
 		return uint16(1)
 	}
@@ -487,7 +487,7 @@ func (st *SlimTrie) neighborBranches(idx uint16, word byte) (ltIdx, eqIdx, rtIdx
 	ltIdx, eqIdx, rtIdx = int32(-1), int32(-1), int32(-1)
 	ltLeaf = false
 
-	isLeaf := st.Leaves.Has(uint32(idx))
+	isLeaf := st.Leaves.Has(int32(idx))
 
 	if word == LeafWord {
 		if isLeaf {
@@ -549,7 +549,7 @@ func (st *SlimTrie) nextBranch(idx uint16, word byte) int32 {
 
 func (st *SlimTrie) leftMost(idx uint16) uint16 {
 	for {
-		if st.Leaves.Has(uint32(idx)) {
+		if st.Leaves.Has(int32(idx)) {
 			return idx
 		}
 
@@ -561,7 +561,7 @@ func (st *SlimTrie) leftMost(idx uint16) uint16 {
 func (st *SlimTrie) rightMost(idx uint16) uint16 {
 	for {
 		// TODO performance: just call getChild directly
-		if !st.Children.Has(uint32(idx)) {
+		if !st.Children.Has(int32(idx)) {
 			return idx
 		}
 

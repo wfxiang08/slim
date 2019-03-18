@@ -97,10 +97,10 @@ func TestMaxKeys(t *testing.T) {
 	if ctrie.Children.Cnt != 1+16+256+4096 {
 		t.Fatalf("children cnt should be %d", 1+16+256+4096)
 	}
-	if ctrie.Steps.Cnt != uint32(0) {
+	if ctrie.Steps.Cnt != int32(0) {
 		t.Fatalf("Steps cnt should be %d", mx)
 	}
-	if ctrie.Leaves.Cnt != uint32(mx) {
+	if ctrie.Leaves.Cnt != int32(mx) {
 		t.Fatalf("leaves cnt should be %d", mx)
 	}
 }
@@ -149,13 +149,13 @@ func TestMaxNode(t *testing.T) {
 		t.Fatalf("error: %s", err)
 	}
 
-	if ctrie.Children.Cnt != uint32(mx-1) {
+	if ctrie.Children.Cnt != int32(mx-1) {
 		t.Fatalf("children cnt should be %d, but: %d", mx-1, ctrie.Children.Cnt)
 	}
-	if ctrie.Steps.Cnt != uint32(0) {
+	if ctrie.Steps.Cnt != int32(0) {
 		t.Fatalf("Steps cnt should be %d", mx)
 	}
-	if ctrie.Leaves.Cnt != uint32(mx) {
+	if ctrie.Leaves.Cnt != int32(mx) {
 		t.Fatalf("leaves cnt should be %d", mx)
 	}
 }
@@ -622,17 +622,17 @@ func TestSlimTrieMarshalAtUnmarshalAt(t *testing.T) {
 }
 
 func checkSlimTrie(ctrie, rCtrie *SlimTrie, t *testing.T) {
-	if !proto.Equal(&(ctrie.Children.Array32Storage), &(rCtrie.Children.Array32Storage)) {
+	if !proto.Equal(&(ctrie.Children.Array32), &(rCtrie.Children.Array32)) {
 		t.Fatalf("Children not the same")
 	}
 
-	if !proto.Equal(&(ctrie.Steps.Array32Storage), &(rCtrie.Steps.Array32Storage)) {
+	if !proto.Equal(&(ctrie.Steps.Array32), &(rCtrie.Steps.Array32)) {
 		t.Fatalf("Step not the same")
 	}
 
-	// TODO need to check non-Array32Storage fields, in future there is
+	// TODO need to check non-Array32 fields, in future there is
 	// user-defined underlaying data structure
-	// if !proto.Equal(&ctrie.Leaves.Array32Storage, &rCtrie.Leaves.Array32Storage) {
+	// if !proto.Equal(&ctrie.Leaves.Array32, &rCtrie.Leaves.Array32) {
 	if !proto.Equal(&ctrie.Leaves, &rCtrie.Leaves) {
 		t.Fatalf("Leaves not the same")
 	}

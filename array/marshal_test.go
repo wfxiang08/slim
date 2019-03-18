@@ -4,12 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	proto "github.com/golang/protobuf/proto"
 	"github.com/openacid/slim/array"
+	"github.com/openacid/slim/prototype"
 )
 
 func TestMarshalUnmarshal(t *testing.T) {
 
-	indexes := []uint32{1, 5, 9, 203}
+	indexes := []int32{1, 5, 9, 203}
 	elts := []uint16{12, 15, 19, 120}
 
 	cases := []struct {
@@ -82,11 +84,11 @@ func TestMarshalUnmarshalBit(t *testing.T) {
 
 	n := 102400
 	step := 2
-	indexes := []uint32{}
+	indexes := []int32{}
 	elts := []uint16{}
 
 	for i := 0; i < n; i += step {
-		indexes = append(indexes, uint32(i))
+		indexes = append(indexes, int32(i))
 		elts = append(elts, uint16(i))
 	}
 
@@ -118,13 +120,13 @@ func TestMarshalUnmarshalBit(t *testing.T) {
 
 func TestMarshalUnmarshal2Types(t *testing.T) {
 
-	indexes := []uint32{1, 5, 9, 203}
+	indexes := []int32{1, 5, 9, 203}
 	elts := []uint16{12, 15, 19, 120}
 
 	a, _ := array.NewArrayU16(indexes, elts)
 	rst, _ := array.Marshal(a)
 
-	b, _ := array.New(array.U16Conv{}, []uint32{}, []uint16{})
+	b, _ := array.New(array.U16Conv{}, []int32{}, []uint16{})
 	array.Unmarshal(b, rst)
 
 	for _, i := range indexes {
@@ -136,4 +138,38 @@ func TestMarshalUnmarshal2Types(t *testing.T) {
 		}
 	}
 
+}
+
+func TestMigrateToSignedCntAndOffsets(t *testing.T) {
+	// marshalled data from previous prototype.Array with uint32 Cnt and uint32 Offsets
+	// message Array32 {
+	//     uint32 Cnt              = 1;
+	//     repeated uint64 Bitmaps = 2;
+	//     repeated uint32 Offsets = 3;
+	//     bytes  Elts             = 4;
+	// }
+	// prototype.Array32{
+	//     Cnt: 0xffffffff,
+	//     Bitmaps: []uint64{0},
+	//     Offsets: []uint32{0xffffffff},
+	//     Elts: []byte{},
+	// }
+	prevMarshalled := []byte{
+		0x8, 0xff, 0xff, 0xff, 0xff, 0xf, 0x12, 0x1,
+		0x0, 0x1a, 0x5, 0xff, 0xff, 0xff, 0xff, 0xf,
+	}
+
+	b := &prototype.Array32{}
+	err := proto.Unmarshal(prevMarshalled, b)
+	if err != nil {
+		t.Errorf("expect no error but: %s", err)
+	}
+
+	if b.Cnt != -1 {
+		t.Fatalf("expect -1 but: %v", b.Cnt)
+	}
+
+	if b.Offsets[0] != -1 {
+		t.Fatalf("expect -1 but: %v", b.Offsets)
+	}
 }

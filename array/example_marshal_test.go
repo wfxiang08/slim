@@ -10,7 +10,7 @@ func Example_marshal() {
 
 	// This example shows how to marshal / unmarshal an array
 
-	indexes := []uint32{1, 5, 9, 203}
+	indexes := []int32{1, 5, 9, 203}
 	elts := []uint16{12, 15, 19, 120}
 
 	a := &array.ArrayU16{

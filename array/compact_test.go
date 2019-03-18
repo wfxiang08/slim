@@ -13,18 +13,18 @@ import (
 )
 
 func TestNewErrorArgments(t *testing.T) {
-	var index []uint32
+	var index []int32
 	eltsData := []uint32{12, 15, 19, 120, 300}
 
 	var err error
 
-	index = []uint32{1, 5, 9, 203}
+	index = []int32{1, 5, 9, 203}
 	_, err = NewU32(index, eltsData)
 	if err == nil {
 		t.Fatalf("new with wrong index length must error")
 	}
 
-	index = []uint32{1, 5, 5, 203, 400}
+	index = []int32{1, 5, 5, 203, 400}
 	_, err = NewU32(index, eltsData)
 	if err == nil {
 		t.Fatalf("new with unsorted index must error")
@@ -33,20 +33,20 @@ func TestNewErrorArgments(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	var cases = []struct {
-		index    []uint32
+		index    []int32
 		eltsData []uint32
 	}{
 		{
-			[]uint32{}, []uint32{},
+			[]int32{}, []uint32{},
 		},
 		{
-			[]uint32{0, 5, 9, 203, 400}, []uint32{12, 15, 19, 120, 300},
+			[]int32{0, 5, 9, 203, 400}, []uint32{12, 15, 19, 120, 300},
 		},
 	}
 
 	for _, c := range cases {
 		index, eltsData := c.index, c.eltsData
-		cnt := uint32(len(index))
+		cnt := int32(len(index))
 
 		ca, err := NewU32(index, eltsData)
 		if err != nil {
@@ -73,11 +73,11 @@ func TestNew(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	index, eltsData := []uint32{}, []uint32{}
+	index, eltsData := []int32{}, []uint32{}
 	rnd := rand.New(rand.NewSource(time.Now().Unix()))
 
-	keysMap := map[uint32]bool{}
-	num, idx, cnt := uint32(0), uint32(0), uint32(1024)
+	keysMap := map[int32]bool{}
+	num, idx, cnt := int32(0), int32(0), int32(1024)
 	for {
 		if rnd.Intn(2) == 1 {
 			index = append(index, idx)
@@ -96,8 +96,8 @@ func TestGet(t *testing.T) {
 		t.Fatalf("failed new compacted array, err: %s", err)
 	}
 
-	dataIdx := uint32(0)
-	for ii := uint32(0); ii < idx; ii++ {
+	dataIdx := int32(0)
+	for ii := int32(0); ii < idx; ii++ {
 
 		actByte := ca.Get(ii)
 		if _, ok := keysMap[ii]; ok {
@@ -143,7 +143,7 @@ func TestSerialize(t *testing.T) {
 		0x0, 0x0,
 	}
 
-	index := []uint32{1, 5, 9, 203}
+	index := []int32{1, 5, 9, 203}
 	eltsData := []uint32{12, 15, 19, 120}
 
 	arr, err := NewU32(index, eltsData)

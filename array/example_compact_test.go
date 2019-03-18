@@ -10,7 +10,7 @@ func Example() {
 	// arr[5]   = 15
 	// arr[9]   = 19
 
-	indexes := []uint32{0, 5, 9}
+	indexes := []int32{0, 5, 9}
 	elts := []uint32{12, 15, 19}
 
 	arr, err := New(U32Conv{}, indexes, elts)

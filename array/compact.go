@@ -22,17 +22,17 @@ type Array32 struct {
 }
 
 // NewU32 creates a Array32 instance with uint32 element.
-func NewU32(indexes []uint32, elts []uint32) (*Array32, error) { return New(U32Conv{}, indexes, elts) }
+func NewU32(indexes []int32, elts []uint32) (*Array32, error) { return New(U32Conv{}, indexes, elts) }
 
 // NewU32 creates a Array32 instance with uint16 element.
-func NewU16(indexes []uint32, elts []uint16) (*Array32, error) { return New(U16Conv{}, indexes, elts) }
+func NewU16(indexes []int32, elts []uint16) (*Array32, error) { return New(U16Conv{}, indexes, elts) }
 
 // New creates a Array and initializes it with a slice of index and a
 // slice of data.
 //
 // The indexes parameter must be a ascending array of type unit32,
 // otherwise, return the ErrIndexNotAscending error
-func New(conv Converter, indexes []uint32, elts interface{}) (ca *Array32, err error) {
+func New(conv Converter, indexes []int32, elts interface{}) (ca *Array32, err error) {
 
 	ca = &Array32{
 		Converter: conv,
@@ -49,7 +49,7 @@ func New(conv Converter, indexes []uint32, elts interface{}) (ca *Array32, err e
 // Init initializes a compacted array from the slice type elts
 // the indexes parameter must be a ascending array of type unit32,
 // otherwise, return the ErrIndexNotAscending error
-func (a *Array32) Init(indexes []uint32, elts interface{}) error {
+func (a *Array32) Init(indexes []int32, elts interface{}) error {
 
 	rElts := reflect.ValueOf(elts)
 	if rElts.Kind() != reflect.Slice {
@@ -78,14 +78,14 @@ func (a *Array32) Init(indexes []uint32, elts interface{}) error {
 }
 
 // Get returns the value indexed by idx if it is in array, else return nil
-func (a *Array32) Get(idx uint32) interface{} {
+func (a *Array32) Get(idx int32) interface{} {
 	v, _ := a.Get2(idx)
 	return v
 }
 
 // Get2 returns the value indexed by `idx` and a bool indicating existence.
 // If `idx` does not present it returns `nil, false`.
-func (a *Array32) Get2(idx uint32) (interface{}, bool) {
+func (a *Array32) Get2(idx int32) (interface{}, bool) {
 	raw, ok := a.GetBytes(idx, a.GetMarshaledSize(nil))
 	if ok {
 		_, val := a.Unmarshal(raw)
@@ -97,14 +97,14 @@ func (a *Array32) Get2(idx uint32) (interface{}, bool) {
 
 // GetBytes is similar to Get2 but does not return the byte slice instead of
 // unmarshaled data.
-func (a *Array32) GetBytes(idx uint32, eltsize int) ([]byte, bool) {
+func (a *Array32) GetBytes(idx int32, eltsize int) ([]byte, bool) {
 	dataIndex, ok := a.GetEltIndex(idx)
 	if !ok {
 		return nil, false
 	}
 
-	stIdx := uint32(eltsize) * dataIndex
-	return a.Elts[stIdx : stIdx+uint32(eltsize)], true
+	stIdx := int32(eltsize) * dataIndex
+	return a.Elts[stIdx : stIdx+int32(eltsize)], true
 }
 
 // GetVersion returns a Version to identify this data type: "a32"

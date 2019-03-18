@@ -10,7 +10,7 @@ import (
 )
 
 type storage interface {
-	GetStorage() *prototype.Array32Storage
+	GetStorage() *prototype.Array32
 }
 
 // TODO: proto.Message.Size() might report wrong size because user-data is not

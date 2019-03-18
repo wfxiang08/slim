@@ -17,7 +17,7 @@ type MyArray struct {
 }
 
 // Get2 implements user defined data retrieving routine.
-func (a *MyArray) Get2(i uint32) (MyElt, bool) {
+func (a *MyArray) Get2(i int32) (MyElt, bool) {
 	j, found := a.GetEltIndex(i)
 	if found {
 		return a.Data[j], true
@@ -29,7 +29,7 @@ func Example_defineArray() {
 
 	// This exmaple shows how to define a new array type.
 
-	indexes := []uint32{1, 5, 9, 203}
+	indexes := []int32{1, 5, 9, 203}
 	elts := []MyElt{
 		{1, 2},
 		{3, 4},
@@ -44,7 +44,7 @@ func Example_defineArray() {
 		return
 	}
 
-	for _, i := range []uint32{1, 2, 5, 6} {
+	for _, i := range []int32{1, 2, 5, 6} {
 		d, found := a.Get2(i)
 		if found {
 			fmt.Printf("value of a[%d]: %d\n", i, d)

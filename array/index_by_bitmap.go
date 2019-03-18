@@ -17,11 +17,11 @@ import (
 // Most time is spent on Bitmaps and Offsets access:
 // L1 or L2 cache assess costs 0.5 ns and 7 ns.
 type Array32Index struct {
-	prototype.Array32Storage
+	prototype.Array32
 }
 
-func (a *Array32Index) GetStorage() *prototype.Array32Storage {
-	return &a.Array32Storage
+func (a *Array32Index) GetStorage() *prototype.Array32 {
+	return &a.Array32
 }
 
 // ErrIndexNotAscending means indexes to initialize a Array must be in
@@ -30,23 +30,23 @@ var ErrIndexNotAscending = errors.New("index must be an ascending ordered slice"
 
 const (
 	// bmWidth defines how many bits for a bitmap word
-	bmWidth = uint32(64)
-	bmMask  = uint32(63)
+	bmWidth = int32(64)
+	bmMask  = int32(63)
 )
 
 // bmBit calculates bitamp word index and the bit index in the word.
-func bmBit(idx uint32) (uint32, uint32) {
+func bmBit(idx int32) (int32, int32) {
 	c := idx >> uint32(6) // == idx / bmWidth
-	r := idx & uint32(63) // == idx % bmWidth
+	r := idx & int32(63)  // == idx % bmWidth
 	return c, r
 }
 
 // InitIndexBitmap initializes index bitmap for a compacted array.
 // Index must be a ascending array of type unit32, otherwise, return
 // the ErrIndexNotAscending error
-func (a *Array32Index) InitIndexBitmap(index []uint32) error {
+func (a *Array32Index) InitIndexBitmap(index []int32) error {
 
-	capacity := uint32(0)
+	capacity := int32(0)
 	if len(index) > 0 {
 		capacity = index[len(index)-1] + 1
 	}
@@ -54,9 +54,9 @@ func (a *Array32Index) InitIndexBitmap(index []uint32) error {
 	bmCnt := (capacity + bmWidth - 1) / bmWidth
 
 	a.Bitmaps = make([]uint64, bmCnt)
-	a.Offsets = make([]uint32, bmCnt)
+	a.Offsets = make([]int32, bmCnt)
 
-	nxt := uint32(0)
+	nxt := int32(0)
 	for i := 0; i < len(index); i++ {
 		if index[i] < nxt {
 			return ErrIndexNotAscending
@@ -70,33 +70,33 @@ func (a *Array32Index) InitIndexBitmap(index []uint32) error {
 // GetEltIndex returns the data position in a.Elts indexed by `idx` and a bool
 // indicating existence.
 // If `idx` does not present it returns `0, false`.
-func (a *Array32Index) GetEltIndex(idx uint32) (uint32, bool) {
+func (a *Array32Index) GetEltIndex(idx int32) (int32, bool) {
 	iBm, iBit := bmBit(idx)
 
-	if iBm >= uint32(len(a.Bitmaps)) {
+	if iBm >= int32(len(a.Bitmaps)) {
 		return 0, false
 	}
 
 	var bmWord = a.Bitmaps[iBm]
 
-	if ((bmWord >> iBit) & 1) == 0 {
+	if ((bmWord >> uint(iBit)) & 1) == 0 {
 		return 0, false
 	}
 
 	base := a.Offsets[iBm]
 	cnt1 := bits.OnesCount64Before(bmWord, uint(iBit))
-	return base + uint32(cnt1), true
+	return base + int32(cnt1), true
 }
 
 // Has returns true if idx is in array, else return false.
-func (a *Array32Index) Has(idx uint32) bool {
+func (a *Array32Index) Has(idx int32) bool {
 	iBm := idx / bmWidth
-	return iBm < uint32(len(a.Bitmaps)) && ((a.Bitmaps[iBm]>>(idx&bmMask))&1) != 0
+	return iBm < int32(len(a.Bitmaps)) && ((a.Bitmaps[iBm]>>uint32(idx&bmMask))&1) != 0
 }
 
 // appendIndex add a index into index bitmap.
 // The `index` must be greater than any existent indexes.
-func (a *Array32Index) appendIndex(index uint32) {
+func (a *Array32Index) appendIndex(index int32) {
 
 	iBm, iBit := bmBit(index)
 
@@ -105,7 +105,7 @@ func (a *Array32Index) appendIndex(index uint32) {
 		a.Offsets[iBm] = a.Cnt
 	}
 
-	*bmWord |= uint64(1) << iBit
+	*bmWord |= uint64(1) << uint(iBit)
 
 	a.Cnt++
 }
