@@ -32,6 +32,8 @@ const (
 	MaxNodeCnt = 65536
 )
 
+
+
 // SlimTrie is a space efficient Trie index.
 //
 // The space overhead is about 6 byte per key and is irrelevant to key length.
@@ -50,8 +52,22 @@ const (
 // TODO add scenario.
 type SlimTrie struct {
 	Children array.Array32
-	Steps    array.Array32
+	Steps    StepArray
 	Leaves   array.Array32
+}
+
+type StepArray struct {
+	Array32Index
+	Data []uint16
+}
+
+func (a *StepArray) Get2(idx int32) (uint16, bool) {
+	i, ok := a.GetEltIndex(idx)
+	if ok {
+		return a.Data[i], true
+	}
+
+	return 0, false
 }
 
 type children struct {
@@ -120,25 +136,6 @@ func (c childConv) GetMarshaledSize(b []byte) int {
 	return 4
 }
 
-type stepConv struct {
-	step *uint16
-}
-
-func (c stepConv) Marshal(d interface{}) []byte {
-	b := make([]byte, 2)
-	binary.LittleEndian.PutUint16(b, *(d.(*uint16)))
-	return b
-}
-
-func (c stepConv) Unmarshal(b []byte) (int, interface{}) {
-	*c.step = binary.LittleEndian.Uint16(b[:2])
-	return 2, c.step
-}
-
-func (c stepConv) GetMarshaledSize(b []byte) int {
-	return 2
-}
-
 // NewSlimTrie create an empty SlimTrie.
 // Argument c implements a array.Converter to convert user data to serialized
 // bytes and back.
@@ -146,7 +143,7 @@ func NewSlimTrie(c array.Converter, keys []string, values interface{}) (*SlimTri
 	var step uint16
 	st := &SlimTrie{
 		Children: array.Array32{Converter: childConv{child: &children{}}},
-		Steps:    array.Array32{Converter: stepConv{step: &step}},
+		Steps:    StepArray,
 		Leaves:   array.Array32{Converter: c},
 	}
 
@@ -185,7 +182,7 @@ func (st *SlimTrie) LoadTrie(root *Node) (err error) {
 	}
 
 	childIndex, childData := []int32{}, []*children{}
-	stepIndex, stepData := []int32{}, []*uint16{}
+	stepIndex := []int32{}
 	leafIndex, leafData := []int32{}, []interface{}{}
 
 	tq := make([]*Node, 0, 256)
@@ -214,7 +211,7 @@ func (st *SlimTrie) LoadTrie(root *Node) (err error) {
 
 		if node.Step > 1 {
 			stepIndex = append(stepIndex, nID)
-			stepData = append(stepData, &node.Step)
+			st.Steps.Data = append(st.Steps.Data, node.Step)
 
 		}
 
@@ -253,7 +250,7 @@ func (st *SlimTrie) LoadTrie(root *Node) (err error) {
 		return err
 	}
 
-	err = st.Steps.Init(stepIndex, stepData)
+	err = st.Steps.InitIndexBitmap(stepIndex)
 	if err != nil {
 		return err
 	}
@@ -469,11 +466,11 @@ func (st *SlimTrie) getChild(idx uint16) *children {
 }
 
 func (st *SlimTrie) getStep(idx uint16) uint16 {
-	step := st.Steps.Get(int32(idx))
-	if step == nil {
-		return uint16(1)
+	step, found := st.Steps.Get2(int32(idx))
+	if found {
+		return step
 	}
-	return *(step.(*uint16))
+	return uint16(1)
 }
 
 // getChildIdx returns the id of the specified child.
